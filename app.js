@@ -1,8 +1,9 @@
 import {
   addPurchaseEntry,
   deletePurchaseEntry,
-  onPurchaseEntriesSnapshot,
+  getPurchaseEntries,
   updatePurchaseEntry,
+  getPurchaseEntriesPaged,
 } from "./firebase-config.js";
 import { exportReport } from "./export-report.js";
 
@@ -17,6 +18,10 @@ const exportButton = document.querySelector("#exportReportBtn");
 
 let entries = [];
 let editingIndex = null;
+let lastDoc = null;
+const PAGE_SIZE = 20;
+
+const loadMoreBtn = document.createElement("button");
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => {
@@ -64,18 +69,38 @@ function renderEntries() {
     .join("");
 }
 
-function loadEntries() {
-  purchaseEntries.innerHTML = '<tr class="empty-row"><td colspan="11">Loading entries...</td></tr>';
+async function loadEntries(append = false) {
+  if (!append) {
+    purchaseEntries.innerHTML = '<tr class="empty-row"><td colspan="11">Loading entries...</td></tr>';
+    entries = [];
+    lastDoc = null;
+  }
 
-  onPurchaseEntriesSnapshot((data, error) => {
-    if (error) {
-      purchaseEntries.innerHTML =
-        '<tr class="empty-row"><td colspan="11">Firebase data load failed. Check Firestore rules/config.</td></tr>';
-      return;
-    }
-    entries = data;
+  try {
+    const result = await getPurchaseEntriesPaged(PAGE_SIZE, lastDoc);
+    entries = [...entries, ...result.data];
+    lastDoc = result.lastDoc;
+    
     renderEntries();
-  });
+    
+    // Load More বাটন কন্ট্রোল
+    if (result.data.length === PAGE_SIZE) {
+      if (!document.querySelector("#loadMoreBtn")) {
+        loadMoreBtn.id = "loadMoreBtn";
+        loadMoreBtn.className = "action-btn";
+        loadMoreBtn.textContent = "Load More...";
+        loadMoreBtn.style.margin = "10px auto";
+        loadMoreBtn.style.display = "block";
+        purchaseEntries.parentElement.after(loadMoreBtn);
+      }
+    } else if (document.querySelector("#loadMoreBtn")) {
+      loadMoreBtn.remove();
+    }
+  } catch (error) {
+    purchaseEntries.innerHTML =
+      '<tr class="empty-row"><td colspan="11">Firebase data load failed. Check Firestore rules/config.</td></tr>';
+    console.error(error);
+  }
 }
 
 function getFormEntry() {
@@ -120,16 +145,19 @@ purchaseForm.addEventListener("submit", async (event) => {
 
   try {
     if (editingIndex === null) {
-      await addPurchaseEntry(entry);
+      const id = await addPurchaseEntry(entry);
+      entries.unshift({ id, ...entry });
       purchaseFormStatus.textContent = "Entry added to Firebase.";
     } else {
       const id = entries[editingIndex].id;
       await updatePurchaseEntry(id, entry);
+      entries[editingIndex] = { id, ...entry };
       editingIndex = null;
       purchaseSubmitBtn.textContent = "Add Entry";
       purchaseFormStatus.textContent = "Entry updated in Firebase.";
     }
 
+    renderEntries();
     purchaseForm.reset();
   } catch (error) {
     purchaseFormStatus.textContent = "Firebase save failed. Check Firestore rules.";
@@ -152,6 +180,8 @@ purchaseEntries.addEventListener("click", async (event) => {
   if (action === "delete") {
     try {
       await deletePurchaseEntry(entries[index].id);
+      entries.splice(index, 1);
+      renderEntries();
       purchaseFormStatus.textContent = "Entry deleted from Firebase.";
     } catch (error) {
       purchaseFormStatus.textContent = "Firebase delete failed. Check Firestore rules.";
@@ -179,5 +209,17 @@ purchaseEntries.addEventListener("click", async (event) => {
   purchaseFormPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
-exportButton?.addEventListener("click", () => exportReport());
+loadMoreBtn.addEventListener("click", () => loadEntries(true));
+
+exportButton?.addEventListener("click", async () => {
+  const originalText = exportButton.textContent;
+  exportButton.textContent = "Preparing Report...";
+  exportButton.disabled = true;
+  // এক্সপোর্টের জন্য সব ডাটা নিয়ে আসা হচ্ছে (ক্যাশ থাকলে ক্যাশ থেকে নিবে)
+  const allEntries = await getPurchaseEntries();
+  await exportReport(allEntries);
+  exportButton.textContent = originalText;
+  exportButton.disabled = false;
+});
+
 loadEntries();

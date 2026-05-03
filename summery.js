@@ -1,5 +1,4 @@
-import { onPurchaseEntriesSnapshot } from "./firebase-config.js";
-import { getPurchaseEntries } from "./firebase-config.js";
+import { subscribeToPurchaseEntries } from "./firebase-config.js";
 import { exportReport } from "./export-report.js";
 
 const DEFAULT_ENTITIES = ["Lumbini", "SML", "SSIL"];
@@ -157,34 +156,31 @@ function renderSummery() {
   renderRows(buildPivot(rows));
 }
 
-function loadSummery() {
 async function loadSummery() {
-  summaryRows.innerHTML = '<tr class="empty-row"><td colspan="3">Loading summary...</td></tr>';
+  // শুরুতে অন্তত ৩টি ডিফল্ট এনটিটি দিয়ে হেডার রেন্ডার করি যাতে টেবিলটি দেখা যায়
+  entities = DEFAULT_ENTITIES;
+  renderHead();
+  
+  // লোডিং মেসেজ (সঠিক colspan সহ)
+  const totalCols = 2 + entities.length * FLAGS.length + 1;
+  summaryRows.innerHTML = `<tr class="empty-row"><td colspan="${totalCols}">Loading summary data...</td></tr>`;
 
-  onPurchaseEntriesSnapshot((data, error) => {
-    if (error) {
-      summaryRows.innerHTML =
-        '<tr class="empty-row"><td colspan="3">Firebase summary load failed. Check Firestore rules/config.</td></tr>';
-      console.error(error);
-      return;
-    }
-    entries = data;
   try {
-    entries = await getPurchaseEntries();
-    entities = getEntities();
-    fillFilter(modelFilter, uniqueValues("model"), "Models");
-    fillFilter(itemFilter, uniqueValues("item"), "Items");
-    renderSummery();
-  });
+    // Real-time subscription - ডাটা এলেই টেবিল আপডেট হবে
+    subscribeToPurchaseEntries((updatedEntries) => {
+      entries = updatedEntries;
+      entities = getEntities();
+      fillFilter(modelFilter, uniqueValues("model"), "Models");
+      fillFilter(itemFilter, uniqueValues("item"), "Items");
+      renderSummery();
+    });
   } catch (error) {
-    summaryRows.innerHTML =
-      '<tr class="empty-row"><td colspan="3">Firebase summary load failed. Check Firestore rules/config.</td></tr>';
-    console.error(error);
+    summaryRows.innerHTML = `<tr class="empty-row"><td colspan="${totalCols}" style="color: red;">Error: ${error.message}</td></tr>`;
+    console.error("Summary Load Error:", error);
   }
 }
 
 modelFilter.addEventListener("change", renderSummery);
 itemFilter.addEventListener("change", renderSummery);
-exportButton?.addEventListener("click", () => exportReport());
 exportButton?.addEventListener("click", () => exportReport(entries));
 loadSummery();

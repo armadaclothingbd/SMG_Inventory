@@ -301,8 +301,8 @@ function createWorkbook(sheets) {
   return createZip(files);
 }
 
-export async function exportReport() {
-  const entries = await getPurchaseEntries();
+export async function exportReport(preLoadedEntries) {
+  const entries = (preLoadedEntries && preLoadedEntries.length > 0) ? preLoadedEntries : await getPurchaseEntries();
   const summarySheet = buildSummarySheet(entries);
   const workbook = createWorkbook([
     { name: "Purchase Entries", rows: buildPurchaseRows(entries) },
