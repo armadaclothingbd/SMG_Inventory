@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://www.gstatic.com; connect-src 'self' https://firestore.googleapis.com https://*.googleapis.com; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+    />
+    <title>SMG Stock | Inventory Command Center</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Main navigation">
+        <a class="brand" href="#" aria-label="SMG Stock home">
+          <span class="brand-mark">S</span>
+          <span>
+            <strong>SMG Stock</strong>
+          </span>
+        </a>
+
+        <nav class="nav-list">
+          <a class="nav-item active" href="#purchases-inventory">Purchases & Inventory</a>
+          <a class="nav-item" href="summery.html">Summery</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+                    <div class="section-heading">
+            <h2>Purchases & Inventory</h2>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-btn" id="exportReportBtn" type="button">Export Report</button>
+            <button class="primary-btn" id="newPurchaseBtn" type="button">New Purchase</button>
+          </div>
+        </header>
+
+        <section class="section-block" id="purchases-inventory" aria-label="Purchases and Inventory">
+
+          <article class="form-panel is-hidden" id="purchaseFormPanel" aria-labelledby="purchase-form-title">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Secure Entry</p>
+                <h2 id="purchase-form-title">Add New Product Purchase</h2>
+              </div>
+              <button class="small-btn" id="closePurchaseForm" type="button">Close</button>
+            </div>
+
+            <form class="purchase-form" id="purchaseForm">
+              <label>
+                <span>Entity</span>
+                <input name="entity" type="text" list="entityOptions" placeholder="Select or type entity" required />
+                <datalist id="entityOptions">
+                  <option value="SSIL"></option>
+                  <option value="SML"></option>
+                  <option value="Lumbini"></option>
+                </datalist>
+              </label>
+
+              <label>
+                <span>Date</span>
+                <input name="date" type="date" required />
+              </label>
+
+              <label>
+                <span>Model</span>
+                <input name="model" type="text" placeholder="Product model or item name" required />
+              </label>
+
+              <label>
+                <span>Item</span>
+                <input name="item" type="text" placeholder="Item name" required />
+              </label>
+
+              <label>
+                <span>Rate</span>
+                <input name="rate" type="number" min="0" step="0.01" placeholder="0.00" required />
+              </label>
+
+              <label>
+                <span>Quantity</span>
+                <input name="quantity" type="number" min="0" step="1" placeholder="0" required />
+              </label>
+
+              <label>
+                <span>Currency</span>
+                <select name="currency" required>
+                  <option value="BDT">BDT</option>
+                  <option value="USD">USD</option>
+                  <option value="EUR">EUR</option>
+                  <option value="CNY">CNY</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Flag</span>
+                <input name="flag" type="text" list="flagOptions" placeholder="Select or type flag" required />
+                <datalist id="flagOptions">
+                  <option value="Purchased"></option>
+                  <option value="Replace"></option>
+                  <option value="New"></option>
+                  <option value="Extra"></option>
+                  <option value="Design Requirement"></option>
+                </datalist>
+              </label>
+
+              <label>
+                <span>Via</span>
+                <input name="via" type="text" list="viaOptions" placeholder="Select or type via" required />
+                <datalist id="viaOptions">
+                  <option value="Asian"></option>
+                  <option value="Direct"></option>
+                  <option value="MAMICO"></option>
+                </datalist>
+              </label>
+
+              <label class="wide-field">
+                <span>Remarks</span>
+                <textarea name="remarks" rows="4" placeholder="Purchase notes, approval details, or delivery instruction"></textarea>
+              </label>
+
+              <div class="form-actions">
+                <p id="purchaseFormStatus" aria-live="polite"></p>
+                <button class="primary-btn" id="purchaseSubmitBtn" type="submit">Add Entry</button>
+              </div>
+            </form>
+          </article>
+
+          <article class="table-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Purchase Entries</p>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Entity</th>
+                    <th>Date</th>
+                    <th>Model</th>
+                    <th>Item</th>
+                    <th>Rate</th>
+                    <th>Quantity</th>
+                    <th>Currency</th>
+                    <th>Flag</th>
+                    <th>Via</th>
+                    <th>Remarks</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="purchaseEntries">
+                  <tr class="empty-row">
+                    <td colspan="11">No purchase entry added yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+      </main>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

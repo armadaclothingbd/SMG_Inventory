@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' https://www.gstatic.com; connect-src 'self' https://firestore.googleapis.com https://*.googleapis.com; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+    />
+    <title>SMG Stock | Summery</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Main navigation">
+        <a class="brand" href="index.html" aria-label="SMG Stock home">
+          <span class="brand-mark">S</span>
+          <span>
+            <strong>SMG Stock</strong>
+          </span>
+        </a>
+
+        <nav class="nav-list">
+          <a class="nav-item" href="index.html">Purchases & Inventory</a>
+          <a class="nav-item active" href="summery.html">Summery</a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow"></p>
+          </div>
+          <div class="section-heading">
+            <h2>Summery</h2>
+          </div>
+          <div class="top-actions">
+            <button class="ghost-btn" id="exportReportBtn" type="button">Export Report</button>
+            <a class="ghost-btn link-btn" href="index.html">Back to Inventory</a>
+          </div>
+        </header>
+
+        <section class="section-block" aria-label="Summery">
+          <article class="summary-controls panel">
+            <label>
+              <span>Model</span>
+              <select id="modelFilter">
+                <option value="all">All Models</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Item</span>
+              <select id="itemFilter">
+                <option value="all">All Items</option>
+              </select>
+            </label>
+          </article>
+
+          <article class="table-panel pivot-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Total Summery</h2>
+              </div>
+            </div>
+
+            <div class="table-wrap">
+              <table class="pivot-table">
+                <thead id="summaryHead"></thead>
+                <tbody id="summaryRows"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="summery.js"></script>
+  </body>
+</html>
